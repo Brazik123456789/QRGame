@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=320, user-scalable=no">
+    <title>Текущая конфигурация балансира</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link href="main.0f7279ab.chunk.css" rel="stylesheet" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div th:replace="header :: header (activePosition = '2')">Header</div>
+    <h2 class="col font-weight-light">Текущая конфигурация балансира</h2>
+<br>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <td align="center">Мероприятие</td>
+            <td align="center">Дата</td>
+            <td align="center">Город</td>
+            <td align="center">Площадка</td>
+            <td align="center">Пришло людей</td>
+            <td align="center">Операции</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="event : ${events}">
+<!--            <th align="center" scope="row" th:text="${map.key}"></th>-->
+<!--            <div th:each="entry1 : ${map}">-->
+            <td align="center" th:text="${event.name}"></td>
+            <td align="center" th:text="${event.date}"></td>
+            <td align="center" th:text="${event.city}"></td>
+            <td align="center" th:text="${event.area}"></td>
+            <td align="center" th:text="${event.people_count}"></td>
+            <td align="center" class="row d-flex justify-content-around">
+                <form th:action="@{'/admin/getQRs' + ${event.id}}" method="GET">
+                    <button class="btn btn-info">QR-коды</button>
+                </form>
+                <form th:action="@{'/admin/editEvent' + ${event.id}}" method="GET">
+                    <button class="btn btn-primary">Изменить</button>
+                </form>
+                <form th:action="@{'/admin/deleteEvent' + ${event.id}}" method="POST">
+                    <button class="btn btn-danger">Удалить</button>
+                </form>
+            </td>
+<!--            </div>-->
+
+        </tr>
+        </tbody>
+    </table>
+
+
+
+<!--    <form class="form-group col" th:action="@{/updateConfig}" method="POST">-->
+<!--        <div class="form-row">-->
+<!--            <label class="col-sm-2">Название мероприятия</label>-->
+<!--            <input type="text" class="form-control col-sm-2" name="event" placeholder="Успешный успех">-->
+<!--        </div>-->
+<!--        <div class="form-row">-->
+<!--            <label class="col-sm-2">Суффикс для ссылки на мероприятие</label>-->
+<!--            <input type="text" class="form-control col-sm-2" name="eventLink" placeholder="uspeh">-->
+<!--        </div>-->
+<!--        <div class="form-row">-->
+<!--            <label class="col-sm-2">Дата мероприятия</label>-->
+<!--            <input type="text" class="form-control col-sm-2" name="date" placeholder="27.08.2021">-->
+<!--        </div>-->
+<!--        <div class="form-row">-->
+<!--            <label class="col-sm-2">Кол-во пользователей на одного бота</label>-->
+<!--            <input type="number" class="form-control col-sm-2" name="peopleInBot" placeholder="30">-->
+<!--        </div>-->
+<!--        <div class="form-row">-->
+<!--            <label class="col-sm-2">Боты через запятую без @ и пробелов</label>-->
+<!--            <textarea type="text" name="bots" class="form-control col-sm-2" placeholder="botUspeh0,botUspeh1,botUspeh2"></textarea>-->
+<!--        </div>-->
+<!--        <button type="submit" class="btn btn-primary">Добавить</button>-->
+<!--    </form>-->
+    <br>
+    <form class="form-group col" th:action="@{/admin/addEvent}" method="GET">
+        <button class="btn btn-primary">Добавить мероприятие</button>
+    </form>
+    <br>
+    <form class="form-group col" th:action="@{/admin/deleteConfig}" method="POST">
+        <button class="btn btn-danger">Удалить текущую конфигурацию балансира</button>
+    </form>
+</body>
+</html>

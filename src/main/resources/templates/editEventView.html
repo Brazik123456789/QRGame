@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=320, user-scalable=no">
+    <title>Настройка балансира</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <h2 class="col font-weight-light">Настройка балансира</h2>
+
+<br>
+    <form class="form-group col" th:action="@{'/editEvent' + ${eventName}}" method="POST">
+        <div class="form-row">
+            <label class="col-sm-2">Название мероприятия</label>
+            <input type="text" class="form-control col-sm-2" name="event" readonly th:value="${eventName}">
+        </div>
+        <div class="form-row">
+            <label class="col-sm-2">Суффикс для ссылки на мероприятие</label>
+            <input type="text" class="form-control col-sm-2" name="eventLink" readonly th:value="${eventLink}">
+        </div>
+        <div class="form-row">
+            <label class="col-sm-2">Дата мероприятия</label>
+            <input type="text" class="form-control col-sm-2" name="date" th:value="${date}">
+        </div>
+<!--        <div class="form-row">-->
+<!--            <label class="col-sm-2">Валюта</label>-->
+<!--            <select class="form-control col-sm-2" type="text" name="currency">-->
+<!--                <option>₽</option>-->
+<!--                <option>$</option>-->
+<!--                <option>€</option>-->
+<!--                <option>£</option>-->
+<!--            </select>-->
+<!--        </div>-->
+        <div class="form-row">
+            <label class="col-sm-2">Кол-во пользователей на одного бота</label>
+            <input type="number" class="form-control col-sm-2" name="peopleInBot" th:value="${peopleInBot}">
+        </div>
+        <div class="form-row">
+            <label class="col-sm-2">Боты через запятую без @ и пробелов</label>
+            <textarea type="text" name="bots" class="form-control col-sm-2" th:text="${bots}"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Изменить</button>
+    </form>
+</body>
+</html>
