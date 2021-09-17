@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.Date;
 
 @Service
 @Data
@@ -20,6 +21,9 @@ public class ConfigHandler {
     private JsonElement config;
     public static String thisHostPort;
     public static String QRsPath;
+    public static String beforeQRsPath;
+    public static String defaultResource;
+    public static Date defaultResourceDate;
 
     public ConfigHandler() {
         readConfigFromfile();
@@ -37,6 +41,8 @@ public class ConfigHandler {
 
         thisHostPort = config.getAsJsonObject().get("thisUrl").toString().substring(1,config.getAsJsonObject().get("thisUrl").toString().length() - 1);
         QRsPath = config.getAsJsonObject().get("QRsPath").toString().substring(1,config.getAsJsonObject().get("QRsPath").toString().length() - 1);
-//        System.out.println(QRsPath);
+        beforeQRsPath = config.getAsJsonObject().get("beforeQRsPath").toString().substring(1,config.getAsJsonObject().get("beforeQRsPath").toString().length() - 1);
+        defaultResource = config.getAsJsonObject().get("defaulResource").toString().substring(1,config.getAsJsonObject().get("defaulResource").toString().length() - 1);
+        defaultResourceDate = new Date();
     }
 }

@@ -25,4 +25,20 @@ public class ResourceService {
             return false;
         }
     }
+
+    public Resource getByQRSuffixNotDeletedAndCamePeopleCountMin(String path) {
+        return resourceRepository.getByQRSuffixNotDeletedAndCamePeopleCountMin(path);
+    }
+
+    public Resource getByQRSuffixNotDeleted(String path) {
+        return resourceRepository.getByQRSuffixNotDeleted(path);
+    }
+
+    public Resource getById(Long id) {
+        return resourceRepository.getById(id);
+    }
+
+    public void delete(Resource res) {
+        resourceRepository.delete(res);
+    }
 }

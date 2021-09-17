@@ -1,5 +1,6 @@
 package com.kolomin.balansir.Services;
 
+import com.kolomin.balansir.Entities.Event;
 import net.glxn.qrgen.core.image.ImageType;
 import net.glxn.qrgen.javase.QRCode;
 import org.springframework.stereotype.Service;
@@ -18,22 +19,21 @@ public class QRGenerate {
     public QRGenerate() {
     }
 
-    public String QRGenerate(String url, String qrSuffix, String eventName){
+    public String QRGenerate(String qr_url, String qrPath, String qrSuffix){
         System.out.println("Метод генерации QR-кода");
-        File file = QRCode.from(url).to(ImageType.PNG)
+        File file = QRCode.from(qr_url).to(ImageType.PNG)
                 .withSize(200, 200)
                 .file();
 
-//        Path path = Paths.get("src/main/resources/static/urls/" + eventName);
-        Path path = Paths.get(QRsPath + eventName);
+        Path path = Paths.get(qrPath);
 
         if (Files.exists(path)) {
             // Если папка под QR существует
-            System.out.println("Добавляем QR в ранее созданный каталог мероприятия " + eventName);
+            System.out.println("Добавляем QR в ранее созданный каталог мероприятия " + qrPath);
         } else {
             // Если папка не существует
             try {
-                System.out.println("Создаем новый каталог под мероприятие " + eventName);
+                System.out.println("Создаем новый каталог под мероприятие " + qrPath);
                 Files.createDirectory(path);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -43,7 +43,7 @@ public class QRGenerate {
         path = Paths.get(path + "/" + qrSuffix + ".png");
 
         if(Files.exists(path)){
-            System.out.println("Удалили ранее существующий PNG с именем" + url);
+            System.out.println("Удалили ранее существующий PNG с именем" + qr_url);
             try {
                 Files.delete(path);
             } catch (IOException e) {
@@ -51,7 +51,7 @@ public class QRGenerate {
             }
         }
         try {
-            System.out.println("Копируем QR-код в новый файл PNG");
+            System.out.println("Копируем (добавляем) QR-код в новый файл PNG");
             Files.copy(file.toPath(), path);
         } catch (IOException e) {
             e.printStackTrace();

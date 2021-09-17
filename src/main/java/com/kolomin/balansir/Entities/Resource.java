@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,10 +16,10 @@ public class Resource {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    @JoinColumn(name = "qr_id")
     private QR qr;
     @Column
     private String qr_suffix;
@@ -43,7 +44,7 @@ public class Resource {
                 "\t\t\t\t\t\"url\": \"" + url + "\",\n" +
                 "\t\t\t\t\t\"people_count\": \"" + people_count + "\",\n" +
                 "\t\t\t\t\t\"came_people_count\": \"" + came_people_count + "\",\n" +
-                "\t\t\t\t\t\"deleted\": \"" + deleted + "\"\n" +
+                "\t\t\t\t\t\"deleted\": " + deleted + "\n" +
                 "\t\t\t\t}";
     }
 }

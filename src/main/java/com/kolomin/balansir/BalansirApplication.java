@@ -7,12 +7,8 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.ViewResolver;
-import org.thymeleaf.spring5.SpringTemplateEngine;
-import org.thymeleaf.spring5.view.ThymeleafViewResolver;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,20 +36,5 @@ public class BalansirApplication extends SpringBootServletInitializer {
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
 		return application.sources(BalansirApplication.class);
-	}
-
-	@Bean
-	public ViewResolver viewResolver() {
-		ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
-		templateResolver.setTemplateMode("HTML");
-		templateResolver.setPrefix("/templates/");
-		templateResolver.setSuffix(".html");
-
-		SpringTemplateEngine engine = new SpringTemplateEngine();
-		engine.setTemplateResolver(templateResolver);
-
-		ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
-		viewResolver.setTemplateEngine(engine);
-		return viewResolver;
 	}
 }

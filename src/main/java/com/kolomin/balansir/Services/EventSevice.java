@@ -3,7 +3,6 @@ package com.kolomin.balansir.Services;
 import com.kolomin.balansir.Entities.Event;
 import com.kolomin.balansir.Repositoeirs.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -49,5 +48,17 @@ public class EventSevice {
         } else {
             return false;
         }
+    }
+
+    public Iterable<? extends Event> findAllDeleted() {
+        return eventRepository.findAllDeleted();
+    }
+
+    public Iterable<? extends Event> findAllByQueryDeletedFalse(String name, String city, String area, String date) {
+        return eventRepository.findAllByQueryDeletedFalse(name, city, area, date);
+    }
+
+    public Iterable<? extends Event> findAllByQueryDeletedTrue(String name, String city, String area, String date) {
+        return eventRepository.findAllByQueryDeletedTrue(name, city, area, date);
     }
 }

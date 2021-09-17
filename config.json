@@ -1,4 +1,10 @@
 {
   "thisUrl": "http:localhost/",
-  "QRsPath": "QRs/"
+  "thisUrl_comment": "Указываем путь, куда перенаправлять пользователя в QR-коде. На удаленном сервере надо прописать  https://домен",
+  "QRsPath": "QRs/",
+  "QRsPath_comment": "папка рядом с jar-ником. куда падают .png",
+  "beforeQRsPath": "/root/qrgame/qrgame/Java/",
+  "beforeQRsPath_comment": "путь на сервере до папки QRsPath",
+  "defaulResource": "https://www.google.ru/",
+  "defaulResource_comment": "указываем дефолтный урл, куда будут перенаправляться пользователи, если их количество больше для заданного QR-кода. Этот урл инициализируется при старте программы, его потом можно менять в админке"
 }

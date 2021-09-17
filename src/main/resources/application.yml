@@ -15,14 +15,3 @@ spring:
         temp:
           use_jdbc_metadata_defaults: false
         default_schema: qr_game
-  thymeleaf:
-    encoding: UTF-8
-#    prefix: /
-#    suffix: .html
-#  resources:
-#    chain:
-#      strategy:
-#        fixed:
-#          enabled: true
-#          paths: /**
-#          version: v12

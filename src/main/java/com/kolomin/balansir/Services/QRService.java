@@ -22,11 +22,27 @@ public class QRService {
         return qrRepository.findAll();
     }
 
-    public Boolean findQRSuffix(String suffix) {
+    public Boolean existsByQRSuffix(String suffix) {
         if (qrRepository.existsByQRSuffix(suffix) != null){
             return true;
         } else {
             return false;
         }
+    }
+
+    public QR getBySuffix(String path) {
+        return qrRepository.getBySuffix(path);
+    }
+
+    public boolean getTeamByQRSuffix(String path) {
+        return qrRepository.getTeamByQRSuffix(path);
+    }
+
+    public QR getById(Long id) {
+        return qrRepository.getById(id);
+    }
+
+    public void delete(QR qr) {
+        qrRepository.delete(qr);
     }
 }
