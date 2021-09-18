@@ -2,12 +2,19 @@ package com.kolomin.balansir.Controllers.Admin;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.kolomin.balansir.Entities.QR;
 import com.kolomin.balansir.Services.*;
 import com.kolomin.balansir.utils.EventFilter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
@@ -160,5 +167,17 @@ public class AdminController {
         defaultResourceDate = new Date();
         return "{\"defaultResource\": \"" + defaultResource + "\", \"date\": \"" + defaultResourceDate.toString() + "\"}";
     }
+
+    /**
+     * Данный маппинг выдает в ответ .png QR-код
+     * */
+    @GetMapping(value = "/getpng/{qr_suffix}", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> getTableImageFile(@PathVariable String qr_suffix) throws IOException {
+        System.out.println("Запрос на получение QR-кода .png");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+        return new ResponseEntity<>(adminService.getImage(qr_suffix), headers, HttpStatus.OK);
+    }
+
 }
 

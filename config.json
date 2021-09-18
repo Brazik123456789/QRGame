@@ -1,5 +1,5 @@
 {
-  "thisUrl": "http:localhost/",
+  "thisUrl": "http://localhost/",
   "thisUrl_comment": "Указываем путь, куда перенаправлять пользователя в QR-коде. На удаленном сервере надо прописать  https://домен",
   "QRsPath": "QRs/",
   "QRsPath_comment": "папка рядом с jar-ником. куда падают .png",

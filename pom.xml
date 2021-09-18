@@ -62,30 +62,19 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.apache.tomcat.embed</groupId>-->
-<!--			<artifactId>tomcat-embed-jasper</artifactId>-->
-<!--			<scope>provided</scope>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>javax.servlet</groupId>-->
-<!--			<artifactId>jstl</artifactId>-->
-<!--			<scope>provided</scope>-->
-<!--		</dependency>-->
-		<!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf-spring4 -->
-<!--		<dependency>-->
-<!--			<groupId>org.thymeleaf</groupId>-->
-<!--			<artifactId>thymeleaf-spring4</artifactId>-->
-<!--			<version>3.0.1.RELEASE</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ibm.icu</groupId>
+			<artifactId>icu4j</artifactId>
+			<version>4.8.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
 
 	</dependencies>
-
-<!--	<resources>-->
-<!--		<resource>-->
-<!--			<directory>src/main/resources/static</directory>-->
-<!--		</resource>-->
-<!--	</resources>-->
 
 	<repositories>
 		<repository>

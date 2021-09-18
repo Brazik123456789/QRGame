@@ -7,7 +7,9 @@ import lombok.ToString;
 import javax.persistence.*;
 import java.util.List;
 
+import static com.kolomin.balansir.BalansirApplication.thisUrl;
 import static com.kolomin.balansir.Config.ConfigHandler.beforeQRsPath;
+import static com.kolomin.balansir.Config.ConfigHandler.thisHostPort;
 
 @Entity
 @Table(name = "qr_table")
@@ -55,7 +57,9 @@ public class QR {
                 "\t\t\t\"team\": " + team + ",\n" +
                 "\t\t\t\"teamForFront\": " + team_for_front + ",\n" +
                 "\t\t\t\"deleted\": " + deleted + ",\n" +
-                "\t\t\t\"qrPath\": \"" + beforeQRsPath + qr_path + "\",\n" +
+//                "\t\t\t\"qrPath\": \"" + beforeQRsPath + qr_path + "\",\n" +
+                "\t\t\t\"qrPath\": \"" + thisHostPort + "admin/getpng/" + qr_suffix + "\",\n" +
+//                "\t\t\t\"qrPath\": \"https://via.placeholder.com/140x100\",\n" +
                 "\t\t\t\"default_resource_people_count\": " + default_resource_people_count + ",\n" +
                 "\t\t\t\"resources\": " + resources + "\n" +
                 "\t\t}";

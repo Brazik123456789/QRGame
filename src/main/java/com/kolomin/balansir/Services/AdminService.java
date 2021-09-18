@@ -2,14 +2,21 @@ package com.kolomin.balansir.Services;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.ibm.icu.text.Transliterator;
 import com.kolomin.balansir.Entities.Event;
 import com.kolomin.balansir.Entities.QR;
 import com.kolomin.balansir.Entities.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +36,8 @@ public class AdminService {
     private ResourceService resourceService;
     private QRGenerate qrGenerate;
     public static SimpleDateFormat myFormat;
+    public static final String CYRILLIC_TO_LATIN = "Cyrillic-Latin";
+    Transliterator toLatinTrans;
 
     @Autowired
     public AdminService(EventSevice eventSevice, QRService qrService, ResourceService resourceService, QRGenerate qrGenerate) {
@@ -37,6 +46,7 @@ public class AdminService {
         this.resourceService = resourceService;
         this.qrGenerate = qrGenerate;
         this.myFormat = new SimpleDateFormat("dd-MM-yyyy");
+        this.toLatinTrans = Transliterator.getInstance(CYRILLIC_TO_LATIN);;
     }
 
     /**
@@ -158,7 +168,7 @@ public class AdminService {
         newEvent.setQrs(new ArrayList<>());
         //  создаю каталог для папки
         String [] dateForPath = request.getAsJsonObject().get("date").toString().replaceAll("\"","").split("-");
-        File qr_path = new File(QRsPath  + newEvent.getName() + newEvent.getCity() + newEvent.getArea() + dateForPath[0] + dateForPath[1]+ dateForPath[2]);
+        File qr_path = new File(toLatinTrans.transliterate(QRsPath  + newEvent.getName() + newEvent.getCity() + newEvent.getArea() + dateForPath[0] + dateForPath[1]+ dateForPath[2]));
         qr_path.mkdir();    //  создали каталог
         newEvent.setQr_path(qr_path.toString().replace("\\", "/"));
         eventSevice.saveOrUpdate(newEvent);
@@ -282,7 +292,7 @@ public class AdminService {
         recursiveDelete(new File(oldEvent.getQr_path() + "/"));   //  удаляем папку с QR-кодами .png данного мероприятия
         //  создаю каталог для папки
         String [] dateForPath = request.getAsJsonObject().get("date").toString().replaceAll("\"","").split("-");
-        File qr_path = new File(QRsPath  + oldEvent.getName() + oldEvent.getCity() + oldEvent.getArea() + dateForPath[0] + dateForPath[1]+ dateForPath[2]);
+        File qr_path = new File(toLatinTrans.transliterate(QRsPath  + oldEvent.getName() + oldEvent.getCity() + oldEvent.getArea() + dateForPath[0] + dateForPath[1]+ dateForPath[2]));
         qr_path.mkdir();    //  создали каталог
         oldEvent.setQr_path(qr_path.toString().replace("\\", "/"));
 //        oldEvent.setQrs(new ArrayList<>());
@@ -603,4 +613,11 @@ public class AdminService {
         return "{\"success\": true}";
     }
 
+    public byte[] getImage(String qr_suffix) throws IOException {
+        System.out.println("getImage");
+        QR qr = qrService.getBySuffix(qr_suffix);
+        File fi = new File(qr.getEvent().getQr_path() + "/" + qr_suffix + ".png");
+        byte[] fileContent = Files.readAllBytes(fi.toPath());
+        return fileContent;
+    }
 }
