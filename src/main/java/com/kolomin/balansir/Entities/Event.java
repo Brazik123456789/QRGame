@@ -49,7 +49,7 @@ public class Event {
                 "\t\"date\": \"" + date.toString().substring(8,10) + "-" + date.toString().substring(5,7) +  "-" + date.toString().substring(0,4) + "\",\n" +
                 "\t\"unixtime\": " + date.getTime()/1000L + ",\n" +
                 "\t\"area\": \"" + area + "\",\n" +
-                "\t\"people_count\": " + people_count + ",\n" +
+                "\t\"people_count\": " + people_count + default_resource_people_count + ",\n" +
                 "\t\"default_resource_people_count\": " + default_resource_people_count + ",\n" +
                 "\t\"qr_path\": \"" + qr_path + "\",\n" +
                 "\t\"deleted\": " + deleted + ",\n" +

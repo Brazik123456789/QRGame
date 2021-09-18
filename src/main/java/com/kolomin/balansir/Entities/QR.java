@@ -52,7 +52,7 @@ public class QR {
                 "\t\t\t\"id\": \"" + id + "\",\n" +
                 "\t\t\t\"qr_suffix\": \"" + qr_suffix + "\",\n" +
                 "\t\t\t\"event_id\": \"" + event.getId() + "\",\n" +
-                "\t\t\t\"people_count\": " + people_count + ",\n" +
+                "\t\t\t\"people_count\": " + people_count + default_resource_people_count + ",\n" +
                 "\t\t\t\"qr_url\": \"" + qr_url + "\",\n" +
                 "\t\t\t\"team\": " + team + ",\n" +
                 "\t\t\t\"teamForFront\": " + team_for_front + ",\n" +
