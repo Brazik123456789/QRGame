@@ -43,16 +43,19 @@ public class QR {
 
     @Override
     public String toString() {
-        int people_count = 0;
+        Long people_count = 0L;
         String qr_path = this.event.getQr_path() + "/" + this.qr_suffix + ".png";
         for (Resource r: this.resources) {
             people_count += r.getCame_people_count();
         }
+
+        people_count += default_resource_people_count;
+
         return "\n\t\t{\n" +
                 "\t\t\t\"id\": \"" + id + "\",\n" +
                 "\t\t\t\"qr_suffix\": \"" + qr_suffix + "\",\n" +
                 "\t\t\t\"event_id\": \"" + event.getId() + "\",\n" +
-                "\t\t\t\"people_count\": " + people_count + default_resource_people_count + ",\n" +
+                "\t\t\t\"people_count\": " + people_count + ",\n" +
                 "\t\t\t\"qr_url\": \"" + qr_url + "\",\n" +
                 "\t\t\t\"team\": " + team + ",\n" +
                 "\t\t\t\"teamForFront\": " + team_for_front + ",\n" +

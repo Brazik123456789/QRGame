@@ -33,7 +33,7 @@ public class Event {
 
     @Override
     public String toString() {
-        int people_count = 0;
+        Long people_count = 0L;
         Long default_resource_people_count = 0L;
         for (QR qr: this.qrs) {
             default_resource_people_count += qr.getDefault_resource_people_count();
@@ -42,6 +42,8 @@ public class Event {
             }
         }
 
+        people_count += default_resource_people_count;
+
         return "{\n" +
                 "\t\"id\": \"" + id + "\",\n" +
                 "\t\"name\": \"" + name + "\",\n" +
@@ -49,7 +51,7 @@ public class Event {
                 "\t\"date\": \"" + date.toString().substring(8,10) + "-" + date.toString().substring(5,7) +  "-" + date.toString().substring(0,4) + "\",\n" +
                 "\t\"unixtime\": " + date.getTime()/1000L + ",\n" +
                 "\t\"area\": \"" + area + "\",\n" +
-                "\t\"people_count\": " + people_count + default_resource_people_count + ",\n" +
+                "\t\"people_count\": " + people_count + ",\n" +
                 "\t\"default_resource_people_count\": " + default_resource_people_count + ",\n" +
                 "\t\"qr_path\": \"" + qr_path + "\",\n" +
                 "\t\"deleted\": " + deleted + ",\n" +
