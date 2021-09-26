@@ -6,6 +6,7 @@ import com.ibm.icu.text.Transliterator;
 import com.kolomin.balansir.Entities.Event;
 import com.kolomin.balansir.Entities.QR;
 import com.kolomin.balansir.Entities.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -34,6 +35,7 @@ import static com.kolomin.balansir.Config.ConfigHandler.thisHostPort;
  * Сервис для обработки данных администратора
  * */
 @Service
+@Slf4j
 public class AdminService {
 
     private EventSevice eventSevice;
@@ -59,26 +61,26 @@ public class AdminService {
      * На этот маппинг кидает запросы фронт каждые 0.5 сек, и если есть дубликаты - подсвечивает введенный пользователем хвост красным
      * */
     public String searchSuffixInDB(String suffix, Long id) {
-        System.out.println("Запрос на сравнение суффикса " + suffix +" с БД");
+        log.info("Запрос на сравнение суффикса " + suffix +" с БД");
 
         if (id == 0){
             if (qrService.existsByQRSuffix(suffix)){
-                System.out.println("{\"exist\": " + true + ", \"suffix\": \"" + suffix + "\"}");
+                log.debug("{\"exist\": " + true + ", \"suffix\": \"" + suffix + "\"}");
                 return "{\"exist\": " + true + ", \"suffix\": \"" + suffix + "\"}";
             } else {
-                System.out.println("{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}");
+                log.debug("{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}");
                 return "{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}";
             }
         } else {    //  суффикса есть в БД (изменение существующего суффикса)
             if (qrService.getById(id).getQr_suffix().equals(suffix)){
-                System.out.println("{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}");
+                log.debug("{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}");
                 return "{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}";
             } else {
                 if (qrService.existsByQRSuffix(suffix)){
-                    System.out.println("{\"exist\": " + true + ", \"suffix\": \"" + suffix + "\"}");
+                    log.debug("{\"exist\": " + true + ", \"suffix\": \"" + suffix + "\"}");
                     return "{\"exist\": " + true + ", \"suffix\": \"" + suffix + "\"}";
                 } else {
-                    System.out.println("{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}");
+                    log.debug("{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}");
                     return "{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}";
                 }
             }
@@ -90,7 +92,7 @@ public class AdminService {
      * На этот маппинг кидает запросы фронт каждые 0.5 сек, и если есть дубликаты - подсвечивает введенный пользователем адрес красным
      * */
     public String searchUrlInDB(String suffix, Long id) {
-        System.out.println("Запрос на сравнение урла внешнего ресурса " + suffix + " с БД");
+        log.info("Запрос на сравнение урла внешнего ресурса " + suffix + " с БД");
 //        if (resourceService.findUrl(suffix)){
 //            System.out.println("{\"exist\": " + true + "}");
 //            return "{\"exist\": " + true + "}";
@@ -101,22 +103,22 @@ public class AdminService {
 
         if (id == 0){
             if (resourceService.findUrl(suffix)){
-                System.out.println("{\"exist\": " + true + ", \"suffix\": \"" + suffix + "\"}");
+                log.debug("{\"exist\": " + true + ", \"suffix\": \"" + suffix + "\"}");
                 return "{\"exist\": " + true + ", \"suffix\": \"" + suffix + "\"}";
             } else {
-                System.out.println("{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}");
+                log.debug("{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}");
                 return "{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}";
             }
         } else {   //  урл есть в БД (изменение существующего суффикса)
             if (resourceService.getById(id).getUrl().equals(suffix)){
-                System.out.println("{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}");
+                log.debug("{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}");
                 return "{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}";
             } else {
                 if (resourceService.findUrl(suffix)){
-                    System.out.println("{\"exist\": " + true + ", \"suffix\": \"" + suffix + "\"}");
+                    log.debug("{\"exist\": " + true + ", \"suffix\": \"" + suffix + "\"}");
                     return "{\"exist\": " + true + ", \"suffix\": \"" + suffix + "\"}";
                 } else {
-                    System.out.println("{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}");
+                    log.debug("{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}");
                     return "{\"exist\": " + false + ", \"suffix\": \"" + suffix + "\"}";
                 }
             }
@@ -142,7 +144,7 @@ public class AdminService {
      * */
     public String getInfoByEventId(Long id) {
         Event event = eventSevice.getEventById(id);
-        System.out.println("Запрос информации по мероприятию " + event.getName());
+        log.info("Запрос информации по мероприятию " + event.getName());
         return event.toString();
     }
 
@@ -150,14 +152,15 @@ public class AdminService {
      * Данный метод добавляет в БД новое мероприятие
      * */
     public String addEvent(HttpEntity<String> params) {
-        System.out.println("Запрос на добавление мероприятия");
+        log.info("Запрос на добавление мероприятия");
         String response = "{\"success\": " + true + "\n";
 
         JsonElement request = new JsonParser().parse(params.getBody());
-        System.out.println("requestBody" + request);
+        log.debug("requestBody" + request);
 
         Event newEvent = new Event();
         if (eventSevice.findEventName(request.getAsJsonObject().get("name").toString().replaceAll("\"",""))){
+            log.error("{\"success\": \"false\", \"errorText\": \"Мероприятие с названием " + request.getAsJsonObject().get("name").toString().replaceAll("\"","") + " уже существует. Мероприятие не добавлено.\"}");
             return "{\"success\": \"false\", \"errorText\": \"Мероприятие с названием " + request.getAsJsonObject().get("name").toString().replaceAll("\"","") + " уже существует. Мероприятие не добавлено.\"}";
         }
         newEvent.setName(request.getAsJsonObject().get("name").toString().replaceAll("\"",""));
@@ -165,7 +168,7 @@ public class AdminService {
         try {
             newEvent.setDate(myFormat.parse(request.getAsJsonObject().get("date").toString().replaceAll("\"","")));
         } catch (ParseException e) {
-            System.out.println("Ошибка в конвертации даты");
+            log.error("Ошибка в конвертации даты");
             return "{\"success\": \"false\", \"errorText\": \"Ошибка в конвертации даты. Мероприятие не добавлено.\"}";
         }
         newEvent.setArea(request.getAsJsonObject().get("area").toString().replaceAll("\"",""));
@@ -183,6 +186,7 @@ public class AdminService {
         for (JsonElement qr: request.getAsJsonObject().get("qrs").getAsJsonArray()) {
             QR newQR = new QR();
             if (qrService.existsByQRSuffix(qr.getAsJsonObject().get("qr_suffix").toString().replaceAll("\"",""))){
+                log.error(response += ",\"errorText\": \"Суффикс " + qr.getAsJsonObject().get("qr_suffix").toString().replaceAll("\"","") + " уже существует. Данный суффикс не добавился\",\n");
                 response += ",\"errorText\": \"Суффикс " + qr.getAsJsonObject().get("qr_suffix").toString().replaceAll("\"","") + " уже существует. Данный суффикс не добавился\",\n";
                 continue;
             }
@@ -246,11 +250,11 @@ public class AdminService {
             qrService.saveOrUpdate(newQR);
             newEvent.getQrs().add(newQR);
 
-            System.out.println("newQR\n" + newQR);
+            log.debug("newQR\n" + newQR);
         }
 
         eventSevice.saveOrUpdate(newEvent);
-        System.out.println("newEvent saved\n" + newEvent);
+        log.debug("newEvent saved\n" + newEvent);
 
         return response += "}";
     }
@@ -260,7 +264,7 @@ public class AdminService {
      * */
     public String deleteEvent(Long id) {
         Event event = eventSevice.getEventById(id);
-        System.out.println("Запрос на полное удаление мероприятия \"" + event.getName() + "\" из БД");
+        log.info("Запрос на полное удаление мероприятия \"" + event.getName() + "\" из БД");
         String eventName = event.getName();
         String eventCity = event.getCity();
         String eventArea = event.getArea();
@@ -268,7 +272,7 @@ public class AdminService {
         recursiveDelete(new File(event.getQr_path() + "/"));   //  удаляем папку с QR-кодами .png данного мероприятия
 
         eventSevice.deleteEvent(event);     //  удаляем полностью мероприятие со всеми зависимостями
-        System.out.println("Мероприятие \"" + eventName + " " + eventCity + " " + eventArea + " " + eventDate +"\" полностью удалено из БД");
+        log.debug("Мероприятие \"" + eventName + " " + eventCity + " " + eventArea + " " + eventDate +"\" полностью удалено из БД");
         return "{\"success\": true}";
     }
 
@@ -277,10 +281,10 @@ public class AdminService {
      * */
     public String editEvent(Long id, HttpEntity<String> params){
         Event oldEvent = eventSevice.getEventById(id);
-        System.out.println("oldEvent :" + oldEvent);
-        System.out.println("Запрос на изменение мероприятия \"" + oldEvent.getName() + "\"");
+        log.info("Запрос на изменение мероприятия \"" + oldEvent.getName() + "\"");
+        log.debug("oldEvent :" + oldEvent);
         JsonElement request = new JsonParser().parse(params.getBody());
-        System.out.println("requestBody" + request);
+        log.debug("requestBody" + request);
 
         String response = "{\"success\": " + true + "\n";
 
@@ -289,7 +293,7 @@ public class AdminService {
         try {
             oldEvent.setDate(myFormat.parse(request.getAsJsonObject().get("date").toString().replaceAll("\"","")));
         } catch (ParseException e) {
-            System.out.println("Ошибка в конвертации даты");
+            log.error("Ошибка в конвертации даты");
             return "{\"success\": \"false\", \"errorText\": \"Ошибка в конвертации даты. Мероприятие не добавлено.\"}";
         }
         oldEvent.setArea(request.getAsJsonObject().get("area").toString().replaceAll("\"",""));
@@ -412,6 +416,7 @@ public class AdminService {
             else {    //  если не существующий код
                 QR newQR = new QR();
                 if (qrService.existsByQRSuffix(qr.getAsJsonObject().get("qr_suffix").toString().replaceAll("\"",""))){
+                    log.error(response += ",\"errorText\": \"Суффикс " + qr.getAsJsonObject().get("qr_suffix").toString().replaceAll("\"","") + " уже существует. Данный суффикс не добавился\",\n");
                     response += ",\"errorText\": \"Суффикс " + qr.getAsJsonObject().get("qr_suffix").toString().replaceAll("\"","") + " уже существует. Данный суффикс не добавился\",\n";
                     continue;
                 }
@@ -445,6 +450,7 @@ public class AdminService {
                 for (JsonElement resource: qr.getAsJsonObject().get("resources").getAsJsonArray()) {
                     Resource newResource = new Resource();
                     if (resourceService.findUrl(resource.getAsJsonObject().get("url").toString().replaceAll("\"",""))){
+                        log.error(response += ",\"errorText\": \"Ресурс " + resource.getAsJsonObject().get("url").toString().replaceAll("\"","") + " уже существует. Данный ресурс не добавился\",\n");
                         response += ",\"errorText\": \"Ресурс " + resource.getAsJsonObject().get("url").toString().replaceAll("\"","") + " уже существует. Данный ресурс не добавился\",\n";
                         continue;
                     }
@@ -494,7 +500,7 @@ public class AdminService {
                 continue;
             } else {
                 for (Resource res:  qr.getResources()) {
-                    System.out.println("res" + res);
+                    log.debug("res" + res);
                     if (!oldAndNewResources.contains(res)) {
                         deleteResources.add(res);
                     }
@@ -508,7 +514,7 @@ public class AdminService {
         }
 
         eventSevice.saveOrUpdate(oldEvent);
-        System.out.println("oldEvent saved\n" + oldEvent);
+        log.debug("oldEvent saved\n" + oldEvent);
 
         return response += "}";
     }
@@ -520,9 +526,9 @@ public class AdminService {
     public String deleteActiveEventOrRestoreEvent(Long id, boolean flag) {
         Event event = eventSevice.getEventById(id);
         if (flag){
-            System.out.println("Запрос на удаление активного мероприятия \"" + event.getName() + " " + event.getCity() + " " + event.getArea() + " " + event.getDate().toString().split(" ")[0] +"\"");
+            log.info("Запрос на удаление активного мероприятия \"" + event.getName() + " " + event.getCity() + " " + event.getArea() + " " + event.getDate().toString().split(" ")[0] +"\"");
         } else {
-            System.out.println("Запрос на восстановление мероприятия \"" + event.getName() + " " + event.getCity() + " " + event.getArea() + " " + event.getDate().toString().split(" ")[0] +"\" из корзины");
+            log.info("Запрос на восстановление мероприятия \"" + event.getName() + " " + event.getCity() + " " + event.getArea() + " " + event.getDate().toString().split(" ")[0] +"\" из корзины");
         }
 
         event.setDeleted(flag); //  ставим флаг удаленного мероприятия
@@ -533,24 +539,24 @@ public class AdminService {
                 r.setDeleted(flag); //  ставим флаг удаленного внешнего ресурса
                 resourceService.saveOrUpdate(r);
                 if (flag){
-                    System.out.println("Перенесли внешний ресурс \"" + r.getUrl() + "\" в корзину");
+                    log.debug("Перенесли внешний ресурс \"" + r.getUrl() + "\" в корзину");
                 } else {
-                    System.out.println("Восстановили внешний ресурс \"" + r.getUrl() + "\" из корзины");
+                    log.debug("Восстановили внешний ресурс \"" + r.getUrl() + "\" из корзины");
                 }
             }
             qrService.saveOrUpdate(qr);
             if (flag){
-                System.out.println("Перенесли QR-код \"" + qr.getQr_url() + "\" в корзину");
+                log.debug("Перенесли QR-код \"" + qr.getQr_url() + "\" в корзину");
             } else {
-                System.out.println("Восстановили QR-код \"" + qr.getQr_url() + "\" из корзины");
+                log.debug("Восстановили QR-код \"" + qr.getQr_url() + "\" из корзины");
             }
         }
 
         eventSevice.saveOrUpdate(event);
         if (flag){
-            System.out.println("Перенесли мероприятие \"" + event.getName() + " " + event.getCity() + " " + event.getArea() + " " + event.getDate().toString().split(" ")[0] +"\" в корзину");
+            log.debug("Перенесли мероприятие \"" + event.getName() + " " + event.getCity() + " " + event.getArea() + " " + event.getDate().toString().split(" ")[0] +"\" в корзину");
         } else {
-            System.out.println("Восстановили мероприятие \"" + event.getName() + " " + event.getCity() + " " + event.getArea() + " " + event.getDate().toString().split(" ")[0] +"\" из корзины");
+            log.debug("Восстановили мероприятие \"" + event.getName() + " " + event.getCity() + " " + event.getArea() + " " + event.getDate().toString().split(" ")[0] +"\" из корзины");
         }
 
         return "{\"success\": true}";
@@ -562,7 +568,7 @@ public class AdminService {
     public String deleteConfig(){
         eventSevice.deleteAll();
         recursiveDelete(new File(QRsPath));
-        System.out.println("Текущий конфиг очищен");
+        log.debug("Текущий конфиг очищен");
         return "{\"success\": true}";
     }
 
@@ -584,7 +590,7 @@ public class AdminService {
         // вызываем метод delete() для удаления файлов и пустых(!) папок
         if (!file.getAbsolutePath().endsWith(QRsPath.substring(0,QRsPath.length()-1))){     //  прописать без / в конце
             file.delete();
-            System.out.println("Удаленный файл или папка: " + file.getAbsolutePath());
+            log.debug("Удаленный файл или папка: " + file.getAbsolutePath());
         }
     }
 
@@ -592,7 +598,7 @@ public class AdminService {
      * Данный метод вытаскивает мероприятия из БД согласно пришедшим данным из фильтра
      * */
     public String eventsFilter(Map<String, String> map) {
-        System.out.println(map.toString());
+//        log.debug(map.toString());
         String name = "%";
         String city = "%";
         String area = "%";
@@ -639,7 +645,7 @@ public class AdminService {
      * Данный метод обнуляет кол-во пришедших пользователей / перешедших на ресурсы
      * */
     public String resetResources(Long id) {
-        System.out.println("Запрос на обнуление счетчиков");
+        log.info("Запрос на обнуление счетчиков");
         for (QR qr: eventSevice.getEventById(id).getQrs()) {
             for (Resource r: qr.getResources()) {
                 r.setCame_people_count(0L);
@@ -659,7 +665,6 @@ public class AdminService {
     }
 
     public byte[] getImage(String qr_suffix) throws IOException {
-        System.out.println("getImage");
         QR qr = qrService.getBySuffix(qr_suffix);
         File fi = new File(qr.getEvent().getQr_path() + "/" + qr_suffix + ".png");
         byte[] fileContent = Files.readAllBytes(fi.toPath());

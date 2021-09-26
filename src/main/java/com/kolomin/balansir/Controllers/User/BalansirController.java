@@ -3,6 +3,7 @@ package com.kolomin.balansir.Controllers.User;
 import com.kolomin.balansir.Entities.QR;
 import com.kolomin.balansir.Entities.Resource;
 import com.kolomin.balansir.Services.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import static com.kolomin.balansir.Config.ConfigHandler.defaultResource;
 import static com.kolomin.balansir.Config.ConfigHandler.thisHostPort;
 
 @Controller
+@Slf4j
 public class BalansirController {
 
     private QRService qrService;
@@ -40,13 +42,13 @@ public class BalansirController {
     @ResponseBody
     @GetMapping("/go/{path}")
     public synchronized String redirect(@PathVariable String path){
-        long m = System.currentTimeMillis();
-        System.out.println("Вызов урла с этим qr_suffix: " + path);
+//        long m = System.currentTimeMillis();
+        log.info("Вызов урла с этим qr_suffix: " + path);
         QR qr = qrService.getBySuffix(path);
         try {
             try {
                 try {
-                    return getResource(qr, path, m);
+                    return getResource(qr, path);
                 } catch (Exception e) {
                     qr.setDefault_resource_people_count(qr.getDefault_resource_people_count() + 1);
                     qrService.saveOrUpdate(qr);
@@ -58,12 +60,12 @@ public class BalansirController {
                 return defaultResource;
             }
         }catch (Exception e){
-            System.out.println("Ненужный мусор");
+            log.info("Ненужный мусор");
             return defaultResource;
         }
     }
 
-    private String getResource(QR qr, String path, long m) {
+    private String getResource(QR qr, String path) {
         if (qr.isTeam()){
             Resource resource = resourceService.getByQRSuffixNotDeletedAndCamePeopleCountMin(path);
             Long Came_people_count = resource.getCame_people_count();
@@ -73,7 +75,7 @@ public class BalansirController {
                     resource.setDeleted(true);
             }
             resourceService.saveOrUpdate(resource);
-            System.out.println(System.currentTimeMillis() - m);
+//            System.out.println(System.currentTimeMillis() - m);
 
             return resource.getUrl();
         }
@@ -89,7 +91,7 @@ public class BalansirController {
                     resource.setDeleted(true);
             }
             resourceService.saveOrUpdate(resource);
-            System.out.println(System.currentTimeMillis() - m);
+//            System.out.println(System.currentTimeMillis() - m);
 
             return resource.getUrl();
         }

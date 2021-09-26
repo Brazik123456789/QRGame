@@ -15,3 +15,14 @@ spring:
         temp:
           use_jdbc_metadata_defaults: false
         default_schema: qr_game
+logging:
+  level:
+#    org:
+#      springframework:
+#        web: DEBUG
+    main: DEBUG
+  pattern:
+    file: "%d{dd.MM.YYYY HH:mm:ss:SSS} [%thread] %-5level %logger{36} %msg%n"
+  path: logs
+  file:
+    name: ${logging.path}/logs.log

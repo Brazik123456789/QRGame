@@ -138,6 +138,7 @@ public class AdminController {
      * */
     @GetMapping("/eventsFilter")
     public String eventsFilter(@RequestParam Map<String, String> requestParams){
+        log.info("Запрос фильтра по данным " + requestParams.toString());
         return adminService.eventsFilter(requestParams);
     }
 
@@ -173,7 +174,7 @@ public class AdminController {
      * */
     @GetMapping(value = "/getpng/{qr_suffix}", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> getTableImageFile(@PathVariable String qr_suffix) throws IOException {
-        System.out.println("Запрос на получение QR-кода .png");
+        log.info("Запрос на получение QR-кода .png");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_PNG);
         return new ResponseEntity<>(adminService.getImage(qr_suffix), headers, HttpStatus.OK);
