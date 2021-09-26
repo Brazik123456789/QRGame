@@ -57,6 +57,8 @@ public class QRGenerate {
             e.printStackTrace();
         }
 
+
+
 //        return path.toString().substring(25).replace("\\", "/");
         return path.toString().replace("\\", "/");
     }

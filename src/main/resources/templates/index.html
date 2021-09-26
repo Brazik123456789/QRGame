@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html>
+<!-- служебная часть -->
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+
+    <script th:inline="javascript">
+        var qr = [[${qr}]];
+        var url = [[${url}]] + qr;
+
+        if ($.cookie('QRs') == null){
+<!--            alert('Впервые отсканировали QR-код на мероприятии');-->
+            $.cookie('QRs', qr + ",", { expires: 7 });
+<!--            alert('Сохранили кук QRs: ' + $.cookie('QRs'));-->
+
+            $.ajax({
+                type: "GET",
+                url: url,
+                data: {},
+                timeout: 1000,
+                success: function(data) {
+<!--                    alert('Сделали ГЕТ-запрос на сервак, получили вн ресурс: ' + data + ' для этого суффикса: ' + qr);-->
+                    var first_res_data = '{\"' + qr + '\": \"' + data + '\"}';
+                    $.cookie('first_resources', first_res_data, { expires: 7 });
+<!--                    alert('Создали и сохранили кук first_resources: ' + $.cookie('first_resources'));-->
+                    location.replace(data);
+<!--                    alert('Перешли по вн ресурсу из БД');-->
+                }
+            });
+        } else {
+            if ($.cookie('QRs').includes(qr)){
+<!--                alert('Уже были на этом суффиксе (QR-коде): ' + qr);-->
+                var first_resources = $.parseJSON($.cookie('first_resources'));
+<!--                alert('first_resources ' + first_resources);-->
+<!--                alert('Получаем тот внешний ресурс, на который переходили в первый раз по этому QR-коду (first_resources[qr]): ' + first_resources[qr]);-->
+                location.replace(first_resources[qr]);
+<!--                alert('Перешли на первый ресурс :' + first_resources[qr]);-->
+            } else {
+<!--                alert('Впервые отсканировали этот QR-код: ' + qr + ' но ранее сканировали другие QR-коды');-->
+<!--                alert('Текущий кук QRs выглядит так: ' + $.cookie('QRs'));-->
+                $.cookie('QRs', $.cookie('QRs') + qr + ",");
+<!--                alert('Добавили новый суффикс (QR-код) в кук QRs и сохранили его: ' + $.cookie('QRs'));-->
+
+                $.ajax({
+                type: "GET",
+                url: url,
+                data: {},
+                timeout: 1000,
+                success: function(data) {
+<!--                    alert(data);-->
+<!--                    alert('Сделали ГЕТ-запрос на сервак, получили вн ресурс: ' + data + ' для этого суффикса: ' + qr);-->
+                    var first_resources = $.cookie('first_resources');
+<!--                    alert('first_resources ' + first_resources);-->
+                    first_resources = first_resources.substring(0, first_resources.length - 1) + ',\"' + qr + '\": \"' + data + '\"}';
+                    $.cookie('first_resources', first_resources, { expires: 7 });
+<!--                    alert('Обновили и сохранили кук first_resources: ' + $.cookie('first_resources'));-->
+                    location.replace(data);
+<!--                    alert('Перешли по вн ресурсу из БД');-->
+                }
+            });
+            }
+        }
+    </script>
+</head>
+
+<body>
+</body>
+</html>

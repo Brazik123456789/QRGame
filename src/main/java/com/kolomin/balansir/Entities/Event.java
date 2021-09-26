@@ -3,7 +3,6 @@ package com.kolomin.balansir.Entities;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -34,14 +33,18 @@ public class Event {
     @Override
     public String toString() {
         Long people_count = 0L;
+        Long general_default_resource_people_count = 0L;
         Long default_resource_people_count = 0L;
         for (QR qr: this.qrs) {
-            default_resource_people_count += qr.getDefault_resource_people_count();
+            general_default_resource_people_count += qr.getGeneral_default_resource_people_count();
+            if (qr.getDefault_resource_people_count() != null)
+                default_resource_people_count += qr.getDefault_resource_people_count();
             for (Resource r: qr.getResources()) {
                 people_count += r.getCame_people_count();
             }
         }
 
+        people_count += general_default_resource_people_count;
         people_count += default_resource_people_count;
 
         return "{\n" +
@@ -52,6 +55,7 @@ public class Event {
                 "\t\"unixtime\": " + date.getTime()/1000L + ",\n" +
                 "\t\"area\": \"" + area + "\",\n" +
                 "\t\"people_count\": " + people_count + ",\n" +
+                "\t\"general_default_resource_people_count\": " + general_default_resource_people_count + ",\n" +
                 "\t\"default_resource_people_count\": " + default_resource_people_count + ",\n" +
                 "\t\"qr_path\": \"" + qr_path + "\",\n" +
                 "\t\"deleted\": " + deleted + ",\n" +

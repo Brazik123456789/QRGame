@@ -1,6 +1,5 @@
 package com.kolomin.balansir.Config;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
@@ -30,7 +29,6 @@ public class ConfigHandler {
     }
 
     private void readConfigFromfile() {
-        Gson gson = new Gson();
         {
             try {
                 config = new JsonParser().parse(new JsonReader(new FileReader(configPath)));
@@ -42,7 +40,7 @@ public class ConfigHandler {
         thisHostPort = config.getAsJsonObject().get("thisUrl").toString().substring(1,config.getAsJsonObject().get("thisUrl").toString().length() - 1);
         QRsPath = config.getAsJsonObject().get("QRsPath").toString().substring(1,config.getAsJsonObject().get("QRsPath").toString().length() - 1);
         beforeQRsPath = config.getAsJsonObject().get("beforeQRsPath").toString().substring(1,config.getAsJsonObject().get("beforeQRsPath").toString().length() - 1);
-        defaultResource = config.getAsJsonObject().get("defaulResource").toString().substring(1,config.getAsJsonObject().get("defaulResource").toString().length() - 1);
+        defaultResource = config.getAsJsonObject().get("defaultResource").toString().substring(1,config.getAsJsonObject().get("defaultResource").toString().length() - 1);
         defaultResourceDate = new Date();
     }
 }

@@ -6,20 +6,25 @@ import com.ibm.icu.text.Transliterator;
 import com.kolomin.balansir.Entities.Event;
 import com.kolomin.balansir.Entities.QR;
 import com.kolomin.balansir.Entities.Resource;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 
 import static com.kolomin.balansir.Config.ConfigHandler.QRsPath;
@@ -36,7 +41,7 @@ public class AdminService {
     private ResourceService resourceService;
     private QRGenerate qrGenerate;
     public static SimpleDateFormat myFormat;
-    public static final String CYRILLIC_TO_LATIN = "Cyrillic-Latin";
+    public static final String CYRILLIC_TO_LATIN = "Cyrillic-Latin; Latin-ASCII";
     Transliterator toLatinTrans;
 
     @Autowired
@@ -168,7 +173,8 @@ public class AdminService {
         newEvent.setQrs(new ArrayList<>());
         //  создаю каталог для папки
         String [] dateForPath = request.getAsJsonObject().get("date").toString().replaceAll("\"","").split("-");
-        File qr_path = new File(toLatinTrans.transliterate(QRsPath  + newEvent.getName() + newEvent.getCity() + newEvent.getArea() + dateForPath[0] + dateForPath[1]+ dateForPath[2]));
+        File qr_path = new File(toLatinTrans.transliterate(QRsPath  + newEvent.getName().replaceAll(" ","") + newEvent.getCity().replaceAll(" ","") + newEvent.getArea().replaceAll(" ","") + dateForPath[0] + dateForPath[1]+ dateForPath[2]));
+//        File qr_path = new File(QRsPath  + transliterate(newEvent.getName() + newEvent.getCity() + newEvent.getArea() + dateForPath[0] + dateForPath[1]+ dateForPath[2]));
         qr_path.mkdir();    //  создали каталог
         newEvent.setQr_path(qr_path.toString().replace("\\", "/"));
         eventSevice.saveOrUpdate(newEvent);
@@ -191,7 +197,12 @@ public class AdminService {
                 newQR.setTeam_for_front(false);
             }
             newQR.setDeleted(false);
-            newQR.setDefault_resource_people_count(0L);
+            newQR.setGeneral_default_resource_people_count(0L);
+            if (!qr.getAsJsonObject().get("default_resource").toString().replaceAll("\"","").equals("")){
+                newQR.setDefault_resource(qr.getAsJsonObject().get("default_resource").toString().replaceAll("\"",""));
+                newQR.setDefault_resource_people_count(0L);
+            }
+
             newQR.setResources(new ArrayList<>());
             qrService.saveOrUpdate(newQR);
             qrGenerate.QRGenerate(newQR.getQr_url(), newEvent.getQr_path(), newQR.getQr_suffix());
@@ -200,10 +211,10 @@ public class AdminService {
 
             for (JsonElement resource: qr.getAsJsonObject().get("resources").getAsJsonArray()) {
                 Resource newResource = new Resource();
-                if (resourceService.findUrl(resource.getAsJsonObject().get("url").toString().replaceAll("\"",""))){
-                    response += ",\"errorText\": \"Ресурс " + resource.getAsJsonObject().get("url").toString().replaceAll("\"","") + " уже существует. Данный ресурс не добавился\",\n";
-                    continue;
-                }
+//                if (resourceService.findUrl(resource.getAsJsonObject().get("url").toString().replaceAll("\"",""))){
+//                    response += ",\"errorText\": \"Ресурс " + resource.getAsJsonObject().get("url").toString().replaceAll("\"","") + " уже существует. Данный ресурс не добавился\",\n";
+//                    continue;
+//                }
                 newResource.setQr(newQR);
                 newResource.setQr_suffix(newQR.getQr_suffix());
                 if (resource.getAsJsonObject().get("people_count").toString().replaceAll("\"","").equals("")){
@@ -265,10 +276,6 @@ public class AdminService {
      * Данный метод изменяет существующее мероприятие в БД
      * */
     public String editEvent(Long id, HttpEntity<String> params){
-//        Event event = eventSevice.getEventById(id);
-//        System.out.println("Запрос на изменение мероприятия \"" + event.getName() + "\"");
-//        deleteEvent(id);    //  для простоты и лишней ебли полностью удаляю существующее мероприятие и добавляю его заново уже обновленным
-//        return addEvent(params);
         Event oldEvent = eventSevice.getEventById(id);
         System.out.println("oldEvent :" + oldEvent);
         System.out.println("Запрос на изменение мероприятия \"" + oldEvent.getName() + "\"");
@@ -286,13 +293,13 @@ public class AdminService {
             return "{\"success\": \"false\", \"errorText\": \"Ошибка в конвертации даты. Мероприятие не добавлено.\"}";
         }
         oldEvent.setArea(request.getAsJsonObject().get("area").toString().replaceAll("\"",""));
-        oldEvent.setDeleted(false);
-
+//        oldEvent.setDeleted(false);
         //  удаляем папку со старыми QR-кодами и генерируем новый каталог
         recursiveDelete(new File(oldEvent.getQr_path() + "/"));   //  удаляем папку с QR-кодами .png данного мероприятия
         //  создаю каталог для папки
         String [] dateForPath = request.getAsJsonObject().get("date").toString().replaceAll("\"","").split("-");
-        File qr_path = new File(toLatinTrans.transliterate(QRsPath  + oldEvent.getName() + oldEvent.getCity() + oldEvent.getArea() + dateForPath[0] + dateForPath[1]+ dateForPath[2]));
+        File qr_path = new File(toLatinTrans.transliterate(QRsPath  + oldEvent.getName().replaceAll(" ","") + oldEvent.getCity().replaceAll(" ","") + oldEvent.getArea().replaceAll(" ","") + dateForPath[0] + dateForPath[1]+ dateForPath[2]));
+//        File qr_path = new File(QRsPath  + transliterate(oldEvent.getName() + oldEvent.getCity() + oldEvent.getArea() + dateForPath[0] + dateForPath[1]+ dateForPath[2]));
         qr_path.mkdir();    //  создали каталог
         oldEvent.setQr_path(qr_path.toString().replace("\\", "/"));
 //        oldEvent.setQrs(new ArrayList<>());
@@ -317,14 +324,21 @@ public class AdminService {
                     oldQR.setTeam_for_front(false);
                 }
 
-//                if (qr.getAsJsonObject().get("teamForFront").toString().replaceAll("\"", "").equals("true")) {
-//                    oldQR.setTeam_for_front(true);
-//                } else {
-//                    oldQR.setTeam_for_front(false);
-//                }
 
-                oldQR.setDeleted(false);
-                oldQR.setDefault_resource_people_count(Long.valueOf(qr.getAsJsonObject().get("default_resource_people_count").toString()));
+                if (!qr.getAsJsonObject().get("default_resource").toString().replaceAll("\"","").equals("null")){
+                    //  если дефолтный внешний ресурс был пуст или не равен пришедшему
+                    if (oldQR.getDefault_resource() == null || !oldQR.getDefault_resource().equals(qr.getAsJsonObject().get("default_resource").toString().replaceAll("\"", ""))) {
+                        oldQR.setDefault_resource(qr.getAsJsonObject().get("default_resource").toString().replaceAll("\"", ""));
+//                    oldQR.setDefault_resource_people_count(Long.valueOf(qr.getAsJsonObject().get("default_resource_people_count").toString().replaceAll("\"","")));
+                        oldQR.setDefault_resource_people_count(0L);
+                    }
+                } else {
+                    oldQR.setDefault_resource(null);
+                    oldQR.setDefault_resource_people_count(null);
+                }
+
+//                oldQR.setDeleted(false);
+                oldQR.setGeneral_default_resource_people_count(Long.valueOf(qr.getAsJsonObject().get("general_default_resource_people_count").toString()));
 //                oldQR.setResources(new ArrayList<>());
                 qrService.saveOrUpdate(oldQR);
 
@@ -344,9 +358,11 @@ public class AdminService {
                         } else {
                             oldResource.setInfinity(false);
                             oldResource.setPeople_count(Long.valueOf(resource.getAsJsonObject().get("people_count").toString().replaceAll("\"", "")));
+                            if (oldResource.getCame_people_count() >= oldResource.getPeople_count())
+                                oldResource.setDeleted(true);
                         }
                         oldResource.setUrl(resource.getAsJsonObject().get("url").toString().replaceAll("\"", ""));
-                        oldResource.setDeleted(false);
+//                        oldResource.setDeleted(false);
 
                         if (oldResource.isInfinity()) {      //  тут добавляю все ресурсы в лист чтоб бесконечные оказались в самом конце массива и при вставке в БД оказались в самом низу
                             resources.add(oldResource);     //  таким образом для некомандного QR-кода люди сначала перейдут на всех конечных, потом на бесконечных
@@ -370,7 +386,11 @@ public class AdminService {
                         }
                         newResource.setUrl(resource.getAsJsonObject().get("url").toString().replaceAll("\"", ""));
                         newResource.setCame_people_count(0L);
-                        newResource.setDeleted(false);
+                        if (oldQR.isDeleted()){
+                            newResource.setDeleted(true);
+                        } else {
+                            newResource.setDeleted(false);
+                        }
 
                         if (newResource.isInfinity()) {      //  тут добавляю все ресурсы в лист чтоб бесконечные оказались в самом конце массива и при вставке в БД оказались в самом низу
                             resources.add(newResource);     //  таким образом для некомандного QR-кода люди сначала перейдут на всех конечных, потом на бесконечных
@@ -405,8 +425,16 @@ public class AdminService {
                     newQR.setTeam(false);
                     newQR.setTeam_for_front(false);
                 }
-                newQR.setDeleted(false);
-                newQR.setDefault_resource_people_count(0L);
+                if (oldEvent.isDeleted()){
+                    newQR.setDeleted(true);
+                } else {
+                    newQR.setDeleted(false);
+                }
+                newQR.setGeneral_default_resource_people_count(0L);
+                if (!qr.getAsJsonObject().get("default_resource").toString().replaceAll("\"","").equals("")){
+                    newQR.setDefault_resource(qr.getAsJsonObject().get("default_resource").toString().replaceAll("\"",""));
+                    newQR.setDefault_resource_people_count(0L);
+                }
                 newQR.setResources(new ArrayList<>());
                 qrService.saveOrUpdate(newQR);
                 oldAndNewQrs.add(newQR);
@@ -431,7 +459,11 @@ public class AdminService {
                     }
                     newResource.setUrl(resource.getAsJsonObject().get("url").toString().replaceAll("\"",""));
                     newResource.setCame_people_count(0L);
-                    newResource.setDeleted(false);
+                    if (newQR.isDeleted()){
+                        newResource.setDeleted(true);
+                    } else {
+                        newResource.setDeleted(false);
+                    }
 
                     if (newResource.isInfinity()){      //  тут добавляю все ресурсы в лист чтоб бесконечные оказались в самом конце массива и при вставке в БД оказались в самом низу
                         resources.add(newResource);     //  таким образом для некомандного QR-кода люди сначала перейдут на всех конечных, потом на бесконечных
@@ -456,17 +488,23 @@ public class AdminService {
 
         for (int i = 0; i < oldEvent.getQrs().size(); i++) {
             QR qr = oldEvent.getQrs().get(i);
+            ArrayList<Resource> deleteResources = new ArrayList<>();
             if (!oldAndNewQrs.contains(qr)){
                 oldEvent.getQrs().remove(qr);
+                continue;
             } else {
                 for (Resource res:  qr.getResources()) {
                     System.out.println("res" + res);
                     if (!oldAndNewResources.contains(res)) {
-                        qr.getResources().remove(res);
-                        qrService.saveOrUpdate(qr);
+                        deleteResources.add(res);
                     }
                 }
             }
+
+            for (Resource res:deleteResources) {
+                qr.getResources().remove(res);
+            }
+            qrService.saveOrUpdate(qr);
         }
 
         eventSevice.saveOrUpdate(oldEvent);
@@ -601,13 +639,20 @@ public class AdminService {
      * Данный метод обнуляет кол-во пришедших пользователей / перешедших на ресурсы
      * */
     public String resetResources(Long id) {
+        System.out.println("Запрос на обнуление счетчиков");
         for (QR qr: eventSevice.getEventById(id).getQrs()) {
             for (Resource r: qr.getResources()) {
                 r.setCame_people_count(0L);
-                r.setDeleted(false);
+                if (r.getQr().isDeleted()){
+                    r.setDeleted(true);
+                } else {
+                    r.setDeleted(false);
+                }
                 resourceService.saveOrUpdate(r);
             }
-            qr.setDefault_resource_people_count(0L);
+            qr.setGeneral_default_resource_people_count(0L);
+            if (qr.getDefault_resource() != null)
+                qr.setDefault_resource_people_count(0L);
             qrService.saveOrUpdate(qr);
         }
         return "{\"success\": true}";
@@ -620,4 +665,73 @@ public class AdminService {
         byte[] fileContent = Files.readAllBytes(fi.toPath());
         return fileContent;
     }
+
+    public String addEventFromExcel(){
+        String output = null;
+        HSSFWorkbook workbook = readWorkbook("addevent.xls");
+        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+            HSSFSheet sheet = workbook.getSheetAt(0);
+
+            //  бегу по строкам
+            Iterator rowIter = sheet.rowIterator();
+            while (rowIter.hasNext()) {
+                HSSFRow row = (HSSFRow) rowIter.next();
+                HSSFCell cell4 = row.getCell(1);
+                output = cell4.getRichStringCellValue().getString();
+                break;
+//                //  Удаляю запятые в количестве
+//                HSSFCell cell4 = row.getCell(3);
+//                if(cell4.getCellType() == HSSFCell.CELL_TYPE_STRING){
+//                    cell4.setCellValue(new String(cell4.getRichStringCellValue().getString().replace(",","")));
+//                }
+//
+//                //  бегу по ячейкам строки
+//                Iterator cellIter = row.cellIterator();
+//                while (cellIter.hasNext()) {
+//                    HSSFCell cell = (HSSFCell) cellIter.next();
+//                    if(cell.getCellType() == HSSFCell.CELL_TYPE_STRING){
+//                        query += "'" + cell.getRichStringCellValue().getString().trim() + "',";
+//                    }
+//                    if(cell.getCellType() == HSSFCell.CELL_TYPE_NUMERIC){
+//                        query += "'" + cell.getNumericCellValue() + "',";
+//                    }
+//                }
+//                query = query.substring(0, query.length()-1);
+//                query += "),";
+            }
+        }
+
+        return output;
+    }
+
+    public static HSSFWorkbook readWorkbook(String filename) {
+        try {
+            POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(filename));
+            HSSFWorkbook wb = new HSSFWorkbook(fs);
+            return wb;
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
+
+    //  транслитератор переводит русские ч, ш, щ, но на линуксовой машине латинские символы č š Č и тому подобные
+    //  заменяются знаками вопроса в названии папок с QR-кодами, поэтому буду использовать
+    //  тупой конвертер, найденный в интернете
+    //  починил транслитератор, добавив "; Latin-ASCII" в CYRILLIC_TO_LATIN. Этот код оставлю на всякий случай
+    public static String transliterate(String message){
+        char[] abcCyr =   {'а','б','в','г','д','е','ё', 'ж','з','и','й','к','л','м','н','о','п','р','с','т','у','ф','х', 'ц','ч', 'ш','щ','ъ','ы','ь','э','ю','я','А','Б','В','Г','Д','Е','Ё', 'Ж','З','И','Й','К','Л','М','Н','О','П','Р','С','Т','У','Ф','Х', 'Ц', 'Ч','Ш', 'Щ','Ъ','Ы','Ь','Э','Ю','Я','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0','.',',',';',':','?','!','/','(',')','{','}','[',']','-','_','\'','"'};
+        String[] abcLat = {"a","b","v","g","d","e","e","zh","z","i","y","k","l","m","n","o","p","r","s","t","u","f","h","ts","ch","sh","sch", "","i", "","e","ju","ja","A","B","V","G","D","E","E","Zh","Z","I","Y","K","L","M","N","O","P","R","S","T","U","F","H","Ts","Ch","Sh","Sch", "","I", "","E","Ju","Ja","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","1","2","3","4","5","6","7","8","9","0",".",",",";",":","?","!","//","(",")","{","}","[","]","-","_","'","\""};
+        StringBuilder builder = new StringBuilder();
+        message = message.replaceAll(" ", "");
+        for (int i = 0; i < message.length(); i++) {
+            for (int x = 0; x < abcCyr.length; x++ ) {
+                if (message.charAt(i) == abcCyr[x]) {
+                    builder.append(abcLat[x]);
+                }
+            }
+        }
+        return builder.toString();
+    }
+
 }

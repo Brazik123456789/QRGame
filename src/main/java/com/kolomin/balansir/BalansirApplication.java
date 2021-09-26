@@ -1,5 +1,6 @@
 package com.kolomin.balansir;
 
+import com.kolomin.balansir.Services.AdminService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

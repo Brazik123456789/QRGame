@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import com.kolomin.balansir.Entities.QR;
 import com.kolomin.balansir.Services.*;
 import com.kolomin.balansir.utils.EventFilter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ import static com.kolomin.balansir.Config.ConfigHandler.defaultResourceDate;
  * */
 @RestController
 @RequestMapping("/admin")
+@Slf4j
 public class AdminController {
 
     private AdminService adminService;
@@ -75,7 +77,7 @@ public class AdminController {
      * */
     @GetMapping("/getAllNotDeletedEvents")
     public String getAllNotDeletedEvents(){
-        System.out.println("Запрос на показ всех неудаленных мероприятий");
+        log.info("Запрос на показ всех неудаленных мероприятий");
         return adminService.getAllNotDeletedEvents();
     }
 
@@ -84,7 +86,7 @@ public class AdminController {
      * */
     @GetMapping("/getAllDeletedEvents")
     public String getAllDeletedEvents(){
-        System.out.println("Запрос на показ всех удаленных мероприятий");
+        log.info("Запрос на показ всех удаленных мероприятий");
         return adminService.getAllDeletedEvents();
     }
 
@@ -111,7 +113,6 @@ public class AdminController {
      * */
     @PutMapping("/restoreEvent")
     public String deleteActiveEventOrRestoreEvent(@RequestParam Long id){
-//        JsonElement request = new JsonParser().parse(params.getBody());
         return adminService.deleteActiveEventOrRestoreEvent(id, false);
     }
 
@@ -128,7 +129,7 @@ public class AdminController {
      * */
     @PostMapping("/deleteConfig")
     public String deleteConfigRest(){
-        System.out.println("Запрос на полную чистку конфига балансира");
+        log.info("Запрос на полную чистку конфига балансира");
         return adminService.deleteConfig();
     }
 
@@ -153,7 +154,6 @@ public class AdminController {
      * */
     @GetMapping("/getinfodefaultresource")
     public String getinfodefaultresource(){
-//        String[] date = defaultResourceDate.
         return "{\"defaultResource\": \"" + defaultResource + "\", \"date\": \"" + defaultResourceDate.toString() + "\"}";
     }
 
@@ -177,6 +177,11 @@ public class AdminController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_PNG);
         return new ResponseEntity<>(adminService.getImage(qr_suffix), headers, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/getExcel")
+    public String getExcel() {
+        return adminService.addEventFromExcel();
     }
 
 }
