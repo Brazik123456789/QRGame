@@ -356,20 +356,41 @@ public class AdminService {
 
 //                        oldResource.setQr(oldQR);
                         oldResource.setQr_suffix(oldQR.getQr_suffix());
-                        if (resource.getAsJsonObject().get("people_count").toString().replaceAll("\"", "").equals("")) {
+                        if (resource.getAsJsonObject().get("people_count").toString().replaceAll("\"", "").equals("0") || resource.getAsJsonObject().get("people_count").toString().replaceAll("\"", "").equals("")) {
                             oldResource.setInfinity(true);
                             oldResource.setPeople_count(0L);
+                            if (oldQR.isDeleted()){
+                                oldResource.setDeleted(true);
+                            } else oldResource.setDeleted(false);
                         } else {
                             oldResource.setInfinity(false);
                             oldResource.setPeople_count(Long.valueOf(resource.getAsJsonObject().get("people_count").toString().replaceAll("\"", "")));
-                            if (oldResource.getCame_people_count() >= oldResource.getPeople_count())
+                            if (oldResource.getCame_people_count() >= oldResource.getPeople_count()) {
                                 oldResource.setDeleted(true);
+                            } else oldResource.setDeleted(false);
                         }
                         oldResource.setUrl(resource.getAsJsonObject().get("url").toString().replaceAll("\"", ""));
 //                        oldResource.setDeleted(false);
 
                         if (oldResource.isInfinity()) {      //  тут добавляю все ресурсы в лист чтоб бесконечные оказались в самом конце массива и при вставке в БД оказались в самом низу
-                            resources.add(oldResource);     //  таким образом для некомандного QR-кода люди сначала перейдут на всех конечных, потом на бесконечных
+                            String qr_suffixToNewRes = oldResource.getQr_suffix();
+                            boolean infinityToNewRes = oldResource.isInfinity();
+                            String urlToNewRes = oldResource.getUrl();
+                            Long people_countToNewRes = oldResource.getPeople_count();
+                            Long came_people_countToNewRes = oldResource.getCame_people_count();
+                            boolean deletedToNewRes = oldResource.isDeleted();
+                            resourceService.delete(oldResource);
+
+                            Resource oldResourceDeleteToNew = new Resource();
+                            oldResourceDeleteToNew.setQr_suffix(qr_suffixToNewRes);
+                            oldResourceDeleteToNew.setQr(oldQR);
+                            oldResourceDeleteToNew.setInfinity(infinityToNewRes);
+                            oldResourceDeleteToNew.setUrl(urlToNewRes);
+                            oldResourceDeleteToNew.setPeople_count(people_countToNewRes);
+                            oldResourceDeleteToNew.setCame_people_count(came_people_countToNewRes);
+                            oldResourceDeleteToNew.setDeleted(deletedToNewRes);
+
+                            resources.add(oldResourceDeleteToNew);     //  таким образом для некомандного QR-кода люди сначала перейдут на всех конечных, потом на бесконечных
                         } else {
                             resources.add(0, oldResource);
                         }

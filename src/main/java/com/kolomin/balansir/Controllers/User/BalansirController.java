@@ -34,6 +34,7 @@ public class BalansirController {
 
     @GetMapping("/{path}")
     public String getIndex(@PathVariable String path, Model model){
+        System.out.println("Отсканировали");
         model.addAttribute("qr", path);
         model.addAttribute("url", thisHostPort + "go/");
         return "index";
@@ -43,7 +44,7 @@ public class BalansirController {
     @GetMapping("/go/{path}")
     public synchronized String redirect(@PathVariable String path){
 //        long m = System.currentTimeMillis();
-        log.info("Вызов урла с этим qr_suffix: " + path);
+//        log.info("Вызов урла с этим qr_suffix: " + path);
         QR qr = qrService.getBySuffix(path);
         try {
             try {

@@ -34,6 +34,7 @@ public class AdminController {
 
     @Autowired
     public AdminController(AdminService adminService) {
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("GMT+3"));
         this.adminService = adminService;
     }
 
