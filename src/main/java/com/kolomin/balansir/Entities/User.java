@@ -1,8 +1,6 @@
 package com.kolomin.balansir.Entities;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 import javax.persistence.*;
 

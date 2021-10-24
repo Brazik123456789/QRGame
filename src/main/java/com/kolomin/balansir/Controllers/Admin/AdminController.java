@@ -1,24 +1,15 @@
 package com.kolomin.balansir.Controllers.Admin;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.kolomin.balansir.Entities.QR;
-import com.kolomin.balansir.Services.*;
-import com.kolomin.balansir.utils.EventFilter;
+import com.google.gson.JsonParser;import com.kolomin.balansir.Services.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
-import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static com.kolomin.balansir.Config.ConfigHandler.defaultResource;
 import static com.kolomin.balansir.Config.ConfigHandler.defaultResourceDate;
