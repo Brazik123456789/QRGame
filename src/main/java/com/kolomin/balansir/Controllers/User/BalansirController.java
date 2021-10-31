@@ -37,15 +37,23 @@ public class BalansirController {
 
     @ResponseBody
     @GetMapping("/go/{path}")
-    public synchronized String redirect(@PathVariable String path){
+    public synchronized String redirect (@PathVariable String path){
 //        long m = System.currentTimeMillis();
 //        log.info("Вызов урла с этим qr_suffix: " + path);
         QR qr = qrService.getBySuffix(path);
         try {
             try {
-                try {
-                    return getResource(qr, path);
-                } catch (Exception e) {
+                Resource resource = getResource(qr, path);
+                if (resource != null){
+                    Long Came_people_count = resource.getCame_people_count();
+                    if (!resource.isInfinity()){
+                        if (Came_people_count + 1 == resource.getPeople_count())
+                            resource.setDeleted(true);
+                    }
+                    resource.setCame_people_count(Came_people_count + 1);
+                    resourceService.saveOrUpdate(resource);
+                    return resource.getUrl();
+                } else {
                     qr.setDefault_resource_people_count(qr.getDefault_resource_people_count() + 1);
                     qrService.saveOrUpdate(qr);
                     return qr.getDefault_resource();
@@ -56,41 +64,37 @@ public class BalansirController {
                 return defaultResource;
             }
         }catch (Exception e){
-            log.info("Ненужный мусор");
+//            log.info("Ненужный мусор");
             return defaultResource;
         }
     }
 
-    private String getResource(QR qr, String path) {
-        if (qr.isTeam()){
-            Resource resource = resourceService.getByQRSuffixNotDeletedAndCamePeopleCountMin(path);
-            Long Came_people_count = resource.getCame_people_count();
-            resource.setCame_people_count(Came_people_count + 1);
-            if (!resource.isInfinity()){
-                if (Came_people_count + 1 == resource.getPeople_count())
-                    resource.setDeleted(true);
+    private Resource getResource(QR qr, String path) {
+        try{
+            if (qr.isTeam()){
+                Resource resource = resourceService.getByQRSuffixNotDeletedAndCamePeopleCountMin(path);
+                return resource;
             }
-            resourceService.saveOrUpdate(resource);
+            else {
+                Resource resource = resourceService.getByQRSuffixNotDeleted(path);
+//                Long Came_people_count = resource.getCame_people_count();
+//                resource.setCame_people_count(Came_people_count + 1);
+//                if (resource.isInfinity()){
+//                    qr.setTeam(true);
+//                    qrService.saveOrUpdate(qr);
+//                } else {
+//                    if (Came_people_count + 1 == resource.getPeople_count())
+//                        resource.setDeleted(true);
+//                }
+//                resourceService.saveOrUpdate(resource);
 //            System.out.println(System.currentTimeMillis() - m);
 
-            return resource.getUrl();
-        }
-        else {
-            Resource resource = resourceService.getByQRSuffixNotDeleted(path);
-            Long Came_people_count = resource.getCame_people_count();
-            resource.setCame_people_count(Came_people_count + 1);
-            if (resource.isInfinity()){
-                qr.setTeam(true);
-                qrService.saveOrUpdate(qr);
-            } else {
-                if (Came_people_count + 1 == resource.getPeople_count())
-                    resource.setDeleted(true);
+                return resource;
             }
-            resourceService.saveOrUpdate(resource);
-//            System.out.println(System.currentTimeMillis() - m);
-
-            return resource.getUrl();
+        } catch (Exception e) {
+            return null;
         }
+
     }
 
 //    @GetMapping("/go/{path}")

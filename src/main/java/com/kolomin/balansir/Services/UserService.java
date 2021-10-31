@@ -62,7 +62,7 @@ public class UserService {
             long milliseconds = newDate.getTime() - tokenDateMap.get(token).getTime();
 //            System.out.println("milliseconds = " + milliseconds);
 //            System.out.println("TimeUnit.MILLISECONDS.toMinutes(minutes) = " + TimeUnit.MILLISECONDS.toMinutes(milliseconds));
-            if (TimeUnit.MILLISECONDS.toMinutes(milliseconds) >= 30){    //  задаем время сессии в минутах
+            if (TimeUnit.MILLISECONDS.toMinutes(milliseconds) >= 1){    //  задаем время сессии в минутах
                 System.out.println("Сессия сгорела");
                 tokenDateMap.remove(token);
                 tokenUserMap.remove(token);
