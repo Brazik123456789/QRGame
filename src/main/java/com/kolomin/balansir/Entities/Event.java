@@ -6,6 +6,8 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
+import static com.kolomin.balansir.Services.AdminService.qr_resources;
+
 @Entity
 @Table(name = "event_table")
 @Data
@@ -47,6 +49,13 @@ public class Event {
         people_count += general_default_resource_people_count;
         people_count += default_resource_people_count;
 
+        boolean statisticStart = false;
+        for (QR qr:qrs) {
+            if (qr_resources.containsKey(qr.getQr_suffix()))
+                statisticStart = true;
+        }
+
+
         return "{\n" +
                 "\t\"id\": \"" + id + "\",\n" +
                 "\t\"name\": \"" + name + "\",\n" +
@@ -59,7 +68,8 @@ public class Event {
                 "\t\"default_resource_people_count\": " + default_resource_people_count + ",\n" +
                 "\t\"qr_path\": \"" + qr_path + "\",\n" +
                 "\t\"deleted\": " + deleted + ",\n" +
-                "\t\"qrs\": " + qrs + "\n" +
+                "\t\"qrs\": " + qrs + ",\n" +
+                "\t\"statisticStart\": " + statisticStart + "\n" +
                 '}';
     }
 }

@@ -16,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,6 +23,7 @@ import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -46,6 +45,16 @@ public class AdminService {
     public static final String CYRILLIC_TO_LATIN = "Cyrillic-Latin; Latin-ASCII";
     Transliterator toLatinTrans;
 
+    public static Hashtable<String, Long> resource_people_count;
+    public static Hashtable<String, Long> resource_came_people_count;
+    public static Hashtable<String, Boolean> resource_deleted;
+    public static Hashtable<String, Boolean> resource_infinity;
+    public static Hashtable<String, ArrayList<String>> qr_resources;
+    public static Hashtable<String, Boolean> qr_team;
+    public static Hashtable<String, String> qr_defaultResource;
+    public static Hashtable<String, Long> qr_default_count;
+    public static Hashtable<String, Long> qr_general_default_count;
+
     @Autowired
     public AdminService(EventSevice eventSevice, QRService qrService, ResourceService resourceService, QRGenerate qrGenerate) {
         this.eventSevice = eventSevice;
@@ -53,7 +62,16 @@ public class AdminService {
         this.resourceService = resourceService;
         this.qrGenerate = qrGenerate;
         this.myFormat = new SimpleDateFormat("dd-MM-yyyy");
-        this.toLatinTrans = Transliterator.getInstance(CYRILLIC_TO_LATIN);;
+        this.toLatinTrans = Transliterator.getInstance(CYRILLIC_TO_LATIN);
+        this.resource_people_count = new Hashtable<>();
+        this.resource_came_people_count = new Hashtable<>();
+        this.resource_deleted = new Hashtable<>();
+        this.resource_infinity = new Hashtable<>();
+        this.qr_resources = new Hashtable<>();
+        this.qr_team = new Hashtable<>();
+        this.qr_default_count = new Hashtable<>();
+        this.qr_general_default_count = new Hashtable<>();
+        this.qr_defaultResource = new Hashtable<>();
     }
 
     /**
@@ -676,12 +694,65 @@ public class AdminService {
                     r.setDeleted(false);
                 }
                 resourceService.saveOrUpdate(r);
+
+                //  удаление из хэштейблов
+                {
+                    if (resource_people_count.containsKey(r.getUrl())) {
+                        resource_people_count.remove(r.getUrl());
+                    }
+                    if (resource_came_people_count.containsKey(r.getUrl())) {
+                        resource_came_people_count.remove(r.getUrl());
+                    }
+                    if (resource_deleted.containsKey(r.getUrl())) {
+                        resource_deleted.remove(r.getUrl());
+                    }
+                    if (resource_infinity.containsKey(r.getUrl())) {
+                        resource_infinity.remove(r.getUrl());
+                    }
+                }
             }
             qr.setGeneral_default_resource_people_count(0L);
             if (qr.getDefault_resource() != null)
                 qr.setDefault_resource_people_count(0L);
             qrService.saveOrUpdate(qr);
+
+            //  удаление из хэштейблов
+            {
+                if (qr_default_count.containsKey(qr.getQr_suffix())) {
+                    qr_default_count.remove(qr.getQr_suffix());
+                }
+                if (qr_general_default_count.containsKey(qr.getQr_suffix())) {
+                    qr_general_default_count.remove(qr.getQr_suffix());
+                }
+                if (qr_team.containsKey(qr.getQr_suffix())) {
+                    qr_team.remove(qr.getQr_suffix());
+                }
+                if (qr_resources.containsKey(qr.getQr_suffix())) {
+                    qr_resources.remove(qr.getQr_suffix());
+                }
+                if (qr_defaultResource.containsKey(qr.getQr_suffix())) {
+                    qr_defaultResource.put(qr.getQr_suffix(), qr.getDefault_resource());
+                }
+            }
         }
+
+//        for (QR qr: eventSevice.getEventById(id).getQrs()) {
+//            for (Resource r: qr.getResources()) {
+//                r.setCame_people_count(0L);
+//                if (r.getQr().isDeleted()){
+//                    r.setDeleted(true);
+//                } else {
+//                    r.setDeleted(false);
+//                }
+//                resourceService.saveOrUpdate(r);
+//            }
+//            qr.setGeneral_default_resource_people_count(0L);
+//            if (qr.getDefault_resource() != null)
+//                qr.setDefault_resource_people_count(0L);
+//            qrService.saveOrUpdate(qr);
+//        }
+
+
         return "{\"success\": true}";
     }
 
@@ -760,4 +831,53 @@ public class AdminService {
         return builder.toString();
     }
 
+    public String statisticStart(Long event_id) {
+        System.out.println("Добавляем в хэш-тейблы данные");
+        Event event = eventSevice.getEventById(event_id);
+        for (QR qr: event.getQrs()) {
+            qr_general_default_count.put(qr.getQr_suffix(), qr.getGeneral_default_resource_people_count());
+            qr_team.put(qr.getQr_suffix(), qr.isTeam());
+            if (qr.getDefault_resource() != null){
+                qr_defaultResource.put(qr.getQr_suffix(), qr.getDefault_resource());
+                qr_default_count.put(qr.getQr_suffix(), qr.getDefault_resource_people_count());
+            }
+            qr_resources.put(qr.getQr_suffix(), new ArrayList<>());
+            for (Resource res:qr.getResources()) {
+                resource_people_count.put(res.getUrl(), res.getPeople_count());
+                resource_came_people_count.put(res.getUrl(), res.getCame_people_count());
+                resource_deleted.put(res.getUrl(),res.isDeleted());
+                resource_infinity.put(res.getUrl(), res.isInfinity());
+                qr_resources.get(qr.getQr_suffix()).add(res.getUrl());
+            }
+        }
+        System.out.println("qr_team = " + qr_team);
+        System.out.println("qr_general_default_count = " + qr_general_default_count);
+        System.out.println("qr_defaultResource = " + qr_defaultResource);
+        System.out.println("qr_default_count = " + qr_default_count);
+        System.out.println("qr_resources = " + qr_resources);
+        System.out.println("resource_people_count = " + resource_people_count);
+        System.out.println("resource_came_people_count = " + resource_came_people_count);
+        System.out.println("resource_deleted = " + resource_deleted);
+        System.out.println("resource_infinity = " + resource_infinity);
+        return "\"success\": true, \"text\": \"Создали мапу для работы балансира\"";
+    }
+
+    public String statisticStop(Long event_id) {
+        Event event = eventSevice.getEventById(event_id);
+        for (QR qr: event.getQrs()) {
+            qr.setDefault_resource_people_count(qr_default_count.get(qr.getQr_suffix()));
+            qr.setGeneral_default_resource_people_count(qr_general_default_count.get(qr.getQr_suffix()));
+//            qr.setTeam(qr_team.get(qr.getQr_suffix()));
+            for (Resource res: qr.getResources()) {
+                res.setCame_people_count(resource_came_people_count.get(res.getUrl()));
+                res.setDeleted(resource_deleted.get(res.getUrl()));
+                res.setInfinity(resource_infinity.get(res.getUrl()));
+                resourceService.saveOrUpdate(res);
+            }
+
+            qrService.saveOrUpdate(qr);
+        }
+
+        return "\"success\": true, \"text\": \"Удалили мапу для работы балансира\"";
+    }
 }

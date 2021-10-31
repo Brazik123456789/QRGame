@@ -293,5 +293,41 @@ public class AdminController {
             return ResponseEntity.status(401).build();
         }
     }
+
+    @GetMapping("/statisticStart")
+    public ResponseEntity statisticStart(HttpEntity<String> rq, @RequestParam Long id){
+        if (userService.chekToken(rq)){
+            System.out.println("прошли chekToken");
+            if (userService.checkadmin(rq)) {
+                System.out.println("прошли checkadmin");
+                log.info("Запрос на показ всех пользователей администратору");
+                return ResponseEntity.ok(adminService.statisticStart(id));
+            } else {
+                System.out.println("не прошли checkadmin");
+                return ResponseEntity.status(403).build();
+            }
+        } else {
+            System.out.println("не прошли chekToken");
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @GetMapping("/statisticStop")
+    public ResponseEntity statisticStop(HttpEntity<String> rq, @RequestParam Long id){
+        if (userService.chekToken(rq)){
+            System.out.println("прошли chekToken");
+            if (userService.checkadmin(rq)) {
+                System.out.println("прошли checkadmin");
+                log.info("Запрос на показ всех пользователей администратору");
+                return ResponseEntity.ok(adminService.statisticStop(id));
+            } else {
+                System.out.println("не прошли checkadmin");
+                return ResponseEntity.status(403).build();
+            }
+        } else {
+            System.out.println("не прошли chekToken");
+            return ResponseEntity.status(401).build();
+        }
+    }
 }
 
