@@ -245,17 +245,13 @@ public class AdminController {
     @GetMapping("/getusers")
     public ResponseEntity getusers(HttpEntity<String> rq){
         if (userService.chekToken(rq)){
-            System.out.println("прошли chekToken");
             if (userService.checkadmin(rq)) {
-                System.out.println("прошли checkadmin");
                 log.info("Запрос на показ всех пользователей администратору");
                 return ResponseEntity.ok(userService.getusers());
             } else {
-                System.out.println("не прошли checkadmin");
                 return ResponseEntity.status(403).build();
             }
         } else {
-            System.out.println("не прошли chekToken");
             return ResponseEntity.status(401).build();
         }
     }
@@ -297,17 +293,10 @@ public class AdminController {
     @GetMapping("/statisticStart")
     public ResponseEntity statisticStart(HttpEntity<String> rq, @RequestParam Long id){
         if (userService.chekToken(rq)){
-            System.out.println("прошли chekToken");
-            if (userService.checkadmin(rq)) {
-                System.out.println("прошли checkadmin");
-                log.info("Запрос на показ всех пользователей администратору");
-                return ResponseEntity.ok(adminService.statisticStart(id));
-            } else {
-                System.out.println("не прошли checkadmin");
-                return ResponseEntity.status(403).build();
-            }
+            System.out.println("прошли checkadmin");
+            log.info("Запрос на показ всех пользователей администратору");
+            return ResponseEntity.ok(adminService.statisticStart(id));
         } else {
-            System.out.println("не прошли chekToken");
             return ResponseEntity.status(401).build();
         }
     }
@@ -315,17 +304,19 @@ public class AdminController {
     @GetMapping("/statisticStop")
     public ResponseEntity statisticStop(HttpEntity<String> rq, @RequestParam Long id){
         if (userService.chekToken(rq)){
-            System.out.println("прошли chekToken");
-            if (userService.checkadmin(rq)) {
-                System.out.println("прошли checkadmin");
-                log.info("Запрос на показ всех пользователей администратору");
-                return ResponseEntity.ok(adminService.statisticStop(id));
-            } else {
-                System.out.println("не прошли checkadmin");
-                return ResponseEntity.status(403).build();
-            }
+            log.info("Запрос на показ всех пользователей администратору");
+            return ResponseEntity.ok(adminService.statisticStop(id));
         } else {
-            System.out.println("не прошли chekToken");
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @GetMapping("/statisticUpdate")
+    public ResponseEntity statisticUpdate(HttpEntity<String> rq, @RequestParam Long id){
+        if (userService.chekToken(rq)){
+            log.info("Запрос на показ всех пользователей администратору");
+            return ResponseEntity.ok(adminService.statisticUpdate(id));
+        } else {
             return ResponseEntity.status(401).build();
         }
     }

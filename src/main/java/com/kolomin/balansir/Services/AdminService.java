@@ -685,6 +685,8 @@ public class AdminService {
      * */
     public String resetResources(Long id) {
         log.info("Запрос на обнуление счетчиков");
+        statisticStop(id);
+
         for (QR qr: eventSevice.getEventById(id).getQrs()) {
             for (Resource r: qr.getResources()) {
                 r.setCame_people_count(0L);
@@ -694,65 +696,12 @@ public class AdminService {
                     r.setDeleted(false);
                 }
                 resourceService.saveOrUpdate(r);
-
-                //  удаление из хэштейблов
-                {
-                    if (resource_people_count.containsKey(r.getUrl())) {
-                        resource_people_count.remove(r.getUrl());
-                    }
-                    if (resource_came_people_count.containsKey(r.getUrl())) {
-                        resource_came_people_count.remove(r.getUrl());
-                    }
-                    if (resource_deleted.containsKey(r.getUrl())) {
-                        resource_deleted.remove(r.getUrl());
-                    }
-                    if (resource_infinity.containsKey(r.getUrl())) {
-                        resource_infinity.remove(r.getUrl());
-                    }
-                }
             }
             qr.setGeneral_default_resource_people_count(0L);
             if (qr.getDefault_resource() != null)
                 qr.setDefault_resource_people_count(0L);
             qrService.saveOrUpdate(qr);
-
-            //  удаление из хэштейблов
-            {
-                if (qr_default_count.containsKey(qr.getQr_suffix())) {
-                    qr_default_count.remove(qr.getQr_suffix());
-                }
-                if (qr_general_default_count.containsKey(qr.getQr_suffix())) {
-                    qr_general_default_count.remove(qr.getQr_suffix());
-                }
-                if (qr_team.containsKey(qr.getQr_suffix())) {
-                    qr_team.remove(qr.getQr_suffix());
-                }
-                if (qr_resources.containsKey(qr.getQr_suffix())) {
-                    qr_resources.remove(qr.getQr_suffix());
-                }
-                if (qr_defaultResource.containsKey(qr.getQr_suffix())) {
-                    qr_defaultResource.put(qr.getQr_suffix(), qr.getDefault_resource());
-                }
-            }
         }
-
-//        for (QR qr: eventSevice.getEventById(id).getQrs()) {
-//            for (Resource r: qr.getResources()) {
-//                r.setCame_people_count(0L);
-//                if (r.getQr().isDeleted()){
-//                    r.setDeleted(true);
-//                } else {
-//                    r.setDeleted(false);
-//                }
-//                resourceService.saveOrUpdate(r);
-//            }
-//            qr.setGeneral_default_resource_people_count(0L);
-//            if (qr.getDefault_resource() != null)
-//                qr.setDefault_resource_people_count(0L);
-//            qrService.saveOrUpdate(qr);
-//        }
-
-
         return "{\"success\": true}";
     }
 
@@ -831,8 +780,11 @@ public class AdminService {
         return builder.toString();
     }
 
+    /**
+     * Данный метод создает записи в хеш-таблицах для того, чтобы балансир пользовательский не ходил в БД
+     * */
     public String statisticStart(Long event_id) {
-        System.out.println("Добавляем в хэш-тейблы данные");
+        System.out.println("Запрос на старт статистики, добавляем в хэш-тейблы данные");
         Event event = eventSevice.getEventById(event_id);
         for (QR qr: event.getQrs()) {
             qr_general_default_count.put(qr.getQr_suffix(), qr.getGeneral_default_resource_people_count());
@@ -862,7 +814,57 @@ public class AdminService {
         return "\"success\": true, \"text\": \"Создали мапу для работы балансира\"";
     }
 
+    /**
+     * Данный метод удаляет записи в хеш-таблицах для того, они не забивались ненужными данными, а использовались только для активных на текущий момент мероприятиях
+     * */
     public String statisticStop(Long event_id) {
+        statisticUpdate(event_id);
+        log.info("Запрос на остановку статистики");
+        for (QR qr: eventSevice.getEventById(event_id).getQrs()) {
+            for (Resource r : qr.getResources()) {
+                //  удаление из хэштейблов
+                {
+                    if (resource_people_count.containsKey(r.getUrl())) {
+                        resource_people_count.remove(r.getUrl());
+                    }
+                    if (resource_came_people_count.containsKey(r.getUrl())) {
+                        resource_came_people_count.remove(r.getUrl());
+                    }
+                    if (resource_deleted.containsKey(r.getUrl())) {
+                        resource_deleted.remove(r.getUrl());
+                    }
+                    if (resource_infinity.containsKey(r.getUrl())) {
+                        resource_infinity.remove(r.getUrl());
+                    }
+                }
+            }
+            //  удаление из хэштейблов
+            {
+                if (qr_default_count.containsKey(qr.getQr_suffix())) {
+                    qr_default_count.remove(qr.getQr_suffix());
+                }
+                if (qr_general_default_count.containsKey(qr.getQr_suffix())) {
+                    qr_general_default_count.remove(qr.getQr_suffix());
+                }
+                if (qr_team.containsKey(qr.getQr_suffix())) {
+                    qr_team.remove(qr.getQr_suffix());
+                }
+                if (qr_resources.containsKey(qr.getQr_suffix())) {
+                    qr_resources.remove(qr.getQr_suffix());
+                }
+                if (qr_defaultResource.containsKey(qr.getQr_suffix())) {
+                    qr_defaultResource.put(qr.getQr_suffix(), qr.getDefault_resource());
+                }
+            }
+        }
+        return "\"success\": true, \"text\": \"Удалили мероприятие из мапы, статистика собираться не будет\"";
+    }
+
+    /**
+     * Данный метод переносит данных счётчиков из хеш-таблиц в БД
+     * */
+    public String statisticUpdate(Long event_id) {
+        log.info("Запрос на обновление статистики");
         Event event = eventSevice.getEventById(event_id);
         for (QR qr: event.getQrs()) {
             qr.setDefault_resource_people_count(qr_default_count.get(qr.getQr_suffix()));
@@ -874,10 +876,9 @@ public class AdminService {
                 res.setInfinity(resource_infinity.get(res.getUrl()));
                 resourceService.saveOrUpdate(res);
             }
-
             qrService.saveOrUpdate(qr);
         }
 
-        return "\"success\": true, \"text\": \"Удалили мапу для работы балансира\"";
+        return "\"success\": true, \"text\": \"Перевели данные из мапы в БД\"";
     }
 }
