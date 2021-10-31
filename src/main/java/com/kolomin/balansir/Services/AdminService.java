@@ -685,7 +685,12 @@ public class AdminService {
      * */
     public String resetResources(Long id) {
         log.info("Запрос на обнуление счетчиков");
-        statisticStop(id);
+        for (QR qr: eventSevice.getEventById(id).getQrs()) {
+            if (qr_resources.containsKey(qr.getQr_suffix())) {
+                statisticStop(id);
+                break;
+            }
+        }
 
         for (QR qr: eventSevice.getEventById(id).getQrs()) {
             for (Resource r: qr.getResources()) {
